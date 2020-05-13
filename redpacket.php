@@ -3,11 +3,11 @@
 
 //生成随机红包算法
 class CalculateRedPacket{
-    public $rewardMoney; #红包金额、单位元
-    public $rewardNum; #红包数量
+    private $rewardMoney; #红包金额、单位元
+    private $rewardNum; #红包数量
 
     #执行红包生成算法
-    public function splitReward($rewardMoney, $rewardNum, $max, $min)
+    private function splitReward($rewardMoney, $rewardNum, $max, $min)
     {
         #传入红包金额和数量，因为小数在计算过程中会出现很大误差，所以我们直接把金额放大100倍，后面的计算全部用整数进行
         $min = $min * 100;
@@ -94,7 +94,7 @@ class CalculateRedPacket{
     }
 
     #处理所有超过最大值的红包
-    public function diff($diff, &$rewardArr, $max, $min, $transfer, $k)
+    private function diff($diff, &$rewardArr, $max, $min, $transfer, $k)
     {
         #将多余的钱均摊给小于最大值的红包
         for ($i = $k; $i < $this->rewardNum; $i++) {
@@ -123,7 +123,7 @@ class CalculateRedPacket{
     }
 
     #第一个红包小于0,从大红包上往下减
-    public function add(&$rewardArr, $min)
+    private function add(&$rewardArr, $min)
     {
         foreach ($rewardArr as &$re) {
             $dev = floor($re / $min);
@@ -145,27 +145,90 @@ class CalculateRedPacket{
         }
     }
 
-}
 
-//生成红包
-function create_red_packet($total,$num,$max,$min){
-    #总共要发的红包金额，留出一个最大值;
-    $total = $total - $max;
-    $reward = new CalculateRedPacket();
-    $result_merge = $reward->splitReward($total, $num, $max - 0.01, $min);
-    sort($result_merge);
-    $result_merge[1] = $result_merge[1] + $result_merge[0];
-    $result_merge[0] = $max * 100;
-    foreach ($result_merge as &$v) {
-        $v = floor($v) / 100;
+    /**
+     * @param $total
+     * @param $num
+     * @param $max
+     * @param $min
+     * @return array
+     * @author deng    (2019/9/30 15:59)
+     */
+    private function random_red($total, $num, $max, $min)
+    {
+        //	总共要发的红包金额，留出一个最大值;
+        $total = $total - $max;
+        $result_merge = $this->splitReward($total, $num, $max - 0.01, $min);
+        sort($result_merge);
+        $result_merge[1] = $result_merge[1] + $result_merge[0];
+        $result_merge[0] = $max * 100;
+        foreach ($result_merge as &$v) {
+            $v = floor($v) / 100;
+        }
+        return $result_merge;
     }
-    return $result_merge;
+
+    /**
+     * 保留2未小数，并不做四舍五入
+     * @param $value
+     * @return string
+     * @author deng    (2019/9/27 16:27)
+     */
+    private function reckon($value)
+    {
+        return sprintf("%.2f", substr(sprintf("%.3f", $value), 0, -2));
+    }
+
+    /**
+     * 生成红包
+     * @param $total
+     * @param $num
+     * @param $min
+     * @return array
+     * @author deng    (2019/9/27 14:22)
+     */
+    public function red_packet($total, $num, $min)
+    {
+        if ($num == 1) {
+            //  数组中只有一个时，则直接返回
+            $result = [
+                '0' => $total
+            ];
+        } else {
+            $value = $this->reckon($total / $num);
+
+            $max = $value + $this->reckon($value / 2);
+
+            $result = $this->random_red($total, $num, $max, $min);
+
+            if (count($result) > 1) {
+                $array_sum = array_sum($result);
+                if ($total > $array_sum) {
+                    //  if 总和 > 数组中的和，差的值补到数组中的最后一位
+                    foreach ($result as $kkk => $vvv) {
+                        //  获取最大的key
+                        $last_key = $kkk;
+                    }
+
+                    $diff_value = $total - $array_sum;
+                    $result[$last_key] = $diff_value + $result[$last_key];
+                }
+            }
+
+            //  打乱数组顺序
+            shuffle($result);
+        }
+
+        return $result;
+    }
+
 }
 
+$arr=new CalculateRedPacket();
 $total=100; //红包总额
-$num=10; //红包数量
-$max=20; //单个红包最大金额
+$num=5; //红包数量
 $min=0.1; //单个红包最小金额
 
 echo "<pre>";
-var_dump(create_red_packet($total,$num,$max,$min));
+var_dump($arr->red_packet($total,$num,$min));
+var_dump(array_sum($arr->red_packet($total,$num,$min)));
