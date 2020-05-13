@@ -1,7 +1,10 @@
 
 <?php
 
-//生成随机红包算法
+/**
+ * 生成随机红包算法
+ * Class CalculateRedPacket
+ */
 class CalculateRedPacket{
     private $rewardMoney; #红包金额、单位元
     private $rewardNum; #红包数量
@@ -224,11 +227,34 @@ class CalculateRedPacket{
 
 }
 
+/**
+ * 生成平均红包算法
+ * @param int $number 红包总额
+ * @param int $taotl 平分红包数量
+ * @param int $index 默认保留位数
+ */
+function average_red_packet($number,$total,$index=2) {
+    // 除法取平均数
+    $divide_number  = bcdiv($number, $total, $index);
+    // 减法获取最后一个数
+    $last_number = bcsub($number, $divide_number*($total-1), $index);
+    // 拼装平分后的数据返回
+    $number_str = str_repeat($divide_number.'+', $total-1).$last_number;
+    return explode('+',$number_str);
+}
+
 $arr=new CalculateRedPacket();
 $total=100; //红包总额
 $num=5; //红包数量
 $min=0.1; //单个红包最小金额
 
 echo "<pre>";
+echo "平均分配红包\n";
+var_dump(average_red_packet($total,7));
+echo "生成红包求和:".array_sum(average_red_packet($total,7))."\n";
+
+echo "<br/>";
+
+echo "随机分配红包\n";
 var_dump($arr->red_packet($total,$num,$min));
-var_dump(array_sum($arr->red_packet($total,$num,$min)));
+echo "生成红包求和:".array_sum($arr->red_packet($total,$num,$min))."\n";
