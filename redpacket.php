@@ -251,7 +251,9 @@ function divived($total,$num){
     if ($fen > 0){
         $arr[0] +=  $fen;
     }
-    return $arr;
+    return array_map(function ($v){
+        return $v/100;
+    },$arr);
 }
 /**
  * 生成平均红包算法
