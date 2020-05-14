@@ -287,6 +287,7 @@ $arr=$redpacket->red_packet($total,$num,$min);
 foreach ($arr as $v){
     $redis->lPush('no-1',$v);
 }
+$redis->expire('no-1',24*60*60);//设置24小时后过期，删除key
 //1数据库存放已领取红包用户
 $redis->lPush('yes-1',0);
 $redis->expire('yes-1',24*60*60);//设置24小时后过期
