@@ -251,6 +251,7 @@ function divived($total,$num){
     if ($fen > 0){
         $arr[0] +=  $fen;
     }
+    shuffle($arr);
     return array_map(function ($v){
         return $v/100;
     },$arr);
