@@ -1,7 +1,7 @@
 <?php
 
 /**
- * 生成随机红包算法
+ * 生成随机红包算法一
  * Class CalculateRedPacket
  */
 class CalculateRedPacket{
@@ -225,7 +225,34 @@ class CalculateRedPacket{
     }
 
 }
-
+//生成随机红包算法二
+function divived($total,$num){
+    $fen = $total * 100;
+    // 创建一个长度等于n的红包数组
+    $arr = [];
+    //第一步 每个红包先塞1分
+    for($i=0;$i<$num;$i++){
+        array_push($arr,1);
+    }
+    //总金额减去已分配的n 分钱
+    $fen -= $num;
+    //第二步，循环遍历如果剩余金额>0 则一直分配
+    $i = 0;  //从第一个红包进行分配
+    //创建一个随机分配对象
+    while ($fen > 1){
+        $f  = random_int(0,$fen);  //创建范围[0,fen)
+        if($f > ($total * 100 / $num) * 3 ){
+            continue;
+        }
+        $arr[$i++%$num] +=  $f;
+        $fen -= $f;
+    }
+    //判断剩余未分配的金额是否大于0,如果大于0，可以把剩下未分配金额塞到第一个红包中
+    if ($fen > 0){
+        $arr[0] +=  $fen;
+    }
+    return $arr;
+}
 /**
  * 生成平均红包算法
  * @param int $number 红包总额
